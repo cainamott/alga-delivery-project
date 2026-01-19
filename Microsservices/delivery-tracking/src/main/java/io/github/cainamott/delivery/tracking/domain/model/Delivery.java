@@ -1,8 +1,13 @@
 package io.github.cainamott.delivery.tracking.domain.model;
 
+import io.github.cainamott.delivery.tracking.domain.events.DeliveryFulfilledEvent;
+import io.github.cainamott.delivery.tracking.domain.events.DeliveryPickedUpEvent;
+import io.github.cainamott.delivery.tracking.domain.events.DeliveryPlacedEvent;
 import io.github.cainamott.delivery.tracking.domain.exception.DomainException;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.AbstractAggregateRoot;
+
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -13,8 +18,8 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Delivery {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class Delivery extends AbstractAggregateRoot<Delivery> {
 
     @Id
     @EqualsAndHashCode.Include
@@ -103,6 +108,7 @@ public class Delivery {
         verifyIfCanBePlaced();
         this.setDeliveryStatus(DeliveryStatus.WAITING_FOR_COURIER);
         this.setPlacedAt(OffsetDateTime.now());
+        super.registerEvent(new DeliveryPlacedEvent(this.placedAt, this.getId()));
     }
 
     private void verifyIfCanBePlaced() {
@@ -129,11 +135,13 @@ public class Delivery {
         this.setCourierId(id);
         this.setDeliveryStatus(DeliveryStatus.IN_TRANSIT);
         this.setAssignedAt(OffsetDateTime.now());
+        super.registerEvent(new DeliveryPickedUpEvent(this.assignedAt, this.getId()));
     }
 
     public void markAsDelivered(){
         this.setDeliveryStatus(DeliveryStatus.DELIVERED);
         this.setFulfilledAt(OffsetDateTime.now());
+        super.registerEvent(new DeliveryFulfilledEvent(this.fulfilledAt, this.getId()));
     }
 
     private void calculateTotalItems(){
