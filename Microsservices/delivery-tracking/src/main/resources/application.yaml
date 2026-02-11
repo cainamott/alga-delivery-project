@@ -19,3 +19,11 @@ spring:
           delivery-placed-event: io.github.cainamott.delivery.tracking.domain.events.DeliveryPlacedEvents,
           delivery-picked-up-event: io.github.cainamott.delivery.tracking.domain.events.DeliveryPickedUpEvent
           delivery-fulfilled-event: io.github.cainamott.delivery.tracking.domain.events.DeliveryFulfilledEvent
+
+eureka:
+  client:
+    server-url:
+      default-zone: http://localhost/8761/eureka/
+  instance:
+    instance-id: ${random.value}
+    prefer-ip-address: true
